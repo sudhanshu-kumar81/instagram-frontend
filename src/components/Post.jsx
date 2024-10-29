@@ -16,9 +16,9 @@ const Post = ({ post }) => {
     const [text, setText] = useState("");
     const [open, setOpen] = useState(false);
     const { user } = useSelector(store => store.auth);
-    const { posts } = useSelector(store => store.post);
-    const [liked, setLiked] = useState(post.likes.includes(user?._id) || false);
-    const [postLike, setPostLike] = useState(post.likes.length);
+    const { posts,selectedPost} = useSelector(store => store.post);
+    const [liked, setLiked] = useState(post?.likes?.includes(user?._id) || false);
+    const [postLike, setPostLike] = useState(post?.likes?.length);
     const [comment, setComment] = useState(post.comments);
     const dispatch = useDispatch();
 
@@ -69,12 +69,16 @@ const Post = ({ post }) => {
             if (res.data.success) {
                 const updatedCommentData = [...comment, res.data.comment];
                 setComment(updatedCommentData);
+                const newSelectedPost={
+                    ...selectedPost,comments:updatedCommentData
+                }
 
                 const updatedPostData = posts.map(p =>
                     p._id === post._id ? { ...p, comments: updatedCommentData } : p
                 );
 
                 dispatch(setPosts(updatedPostData));
+                dispatch(setSelectedPost(newSelectedPost));
                 toast.success(res.data.message);
                 setText("");
             }
@@ -120,7 +124,7 @@ const Post = ({ post }) => {
 
 
                     <Link to={`/profile/${post.author?._id}`}><h1>{post.author?.username}</h1></Link>
-                       {user?._id === post.author._id &&  <Badge variant="secondary">Author</Badge>}
+                       {user?._id === post?.author?._id &&  <Badge variant="secondary">Author</Badge>}
                     </div>
                 </div>
                 <Dialog>
@@ -134,7 +138,7 @@ const Post = ({ post }) => {
                         
                         <Button variant='ghost' className="cursor-pointer w-fit">Add to favorites</Button>
                         {
-                            user && user?._id === post?.author._id && <Button onClick={deletePostHandler} variant='ghost' className="cursor-pointer w-fit">Delete</Button>
+                            user && user?._id === post?.author?._id && <Button onClick={deletePostHandler} variant='ghost' className="cursor-pointer w-fit">Delete</Button>
                         }
                     </DialogContent>
                 </Dialog>
@@ -165,11 +169,11 @@ const Post = ({ post }) => {
                 {post.caption}
             </p>
             {
-                comment.length > 0 && (
+                comment?.length > 0 && (
                     <span onClick={() => {
                         dispatch(setSelectedPost(post));
                         setOpen(true);
-                    }} className='cursor-pointer text-sm text-gray-400'>View all {comment.length} comments</span>
+                    }} className='cursor-pointer text-sm text-gray-400'>View all {selectedPost?.comments?.length} comments</span>
                 )
             }
             <CommentDialog open={open} setOpen={setOpen} />

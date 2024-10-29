@@ -8,7 +8,7 @@ import { Badge } from './ui/badge';
 import { AtSign, Heart, MessageCircle } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
-import { setAuthUser, setUserProfile } from '@/redux/authSlice';
+import { setAuthUser, setSuggestedUsers, setUserProfile } from '@/redux/authSlice';
 
 const Profile = () => {
   const dispatch=useDispatch();
@@ -17,10 +17,10 @@ const Profile = () => {
   useGetUserProfile(userId);
   const [activeTab, setActiveTab] = useState('posts');
 
-  const { userProfile, user } = useSelector(store => store.auth);
+  const { userProfile, user,suggestedUsers } = useSelector(store => store.auth);
 
   const isLoggedInUserProfile = user?._id === userProfile?._id;
-  const isFollowing = userProfile.followers.find(id=>id===user._id)
+  const isFollowing = userProfile?.followers?.find(id=>id===user._id)
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -39,8 +39,10 @@ const Profile = () => {
         if (res.data.success) {
           let updatedUser=user;
           let updatedUserProfile=userProfile;
+           let newSuggestedUser=suggestedUsers;
           console.log("user is ",user);
           if(res.data.message==='followed successfully'){
+           
             console.log(" res.data.jiskoFollowKrunga", res.data.jiskoFollowKrunga);
             updatedUser = { 
               ...updatedUser,
@@ -50,9 +52,10 @@ const Profile = () => {
             ...updatedUserProfile, 
             followers: [...updatedUserProfile.followers, res.data.followKrneWala] 
         }
-        console.log("follow")
-          console.log("user is ",updatedUser);
-          console.log("updatedUserProfile",updatedUserProfile);
+           newSuggestedUser = suggestedUsers.filter(p => p._id !== res.data.jiskoFollowKrunga);
+        // console.log("follow")
+        //   console.log("user is ",updatedUser);
+        //   console.log("updatedUserProfile",updatedUserProfile);
           
         }
         else{
@@ -65,12 +68,15 @@ const Profile = () => {
           ...updatedUserProfile, 
           followers: updatedUserProfile.followers.filter(id=>id!=res.data.followKrneWala)
       }
+      newSuggestedUser = [...suggestedUsers, userProfile];
     }
         console.log("unfollow")
         console.log("user is ",updatedUser);
         console.log("updatedUserProfile",updatedUserProfile);
         dispatch(setAuthUser(updatedUser))
-        dispatch(setUserProfile(updatedUserProfile))     
+        dispatch(setUserProfile(updatedUserProfile))
+        console.log("hi fine")
+        dispatch(setSuggestedUsers(newSuggestedUser))     
         toast.success(res.data.message); 
           }
      
@@ -151,11 +157,11 @@ const Profile = () => {
                       <div className='flex items-center text-white space-x-4'>
                         <button className='flex items-center gap-2 hover:text-gray-300'>
                           <Heart />
-                          <span>{post?.likes.length}</span>
+                          <span>{post?.likes?.length}</span>
                         </button>
                         <button className='flex items-center gap-2 hover:text-gray-300'>
                           <MessageCircle />
-                          <span>{post?.comments.length}</span>
+                          <span>{post?.comments?.length}</span>
                         </button>
                       </div>
                     </div>
