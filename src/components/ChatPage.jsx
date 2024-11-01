@@ -8,12 +8,14 @@ import { MessageCircleCode } from 'lucide-react';
 import Messages from './Messages';
 import axios from 'axios';
 import { setMessages } from '@/redux/chatSlice';
+import useGetALLfollowingUser from '@/hooks/useGetALLfollowingUser';
 
 const ChatPage = () => {
     const [textMessage, setTextMessage] = useState("");
-    const { user, suggestedUsers, selectedUser } = useSelector(store => store.auth);
+    const { user, suggestedUsers, selectedUser,followingUser } = useSelector(store => store.auth);
     const { onlineUsers, messages } = useSelector(store => store.chat);
     const dispatch = useDispatch();
+      useGetALLfollowingUser();
 
     const sendMessageHandler = async (receiverId) => {
         try {
@@ -32,11 +34,11 @@ const ChatPage = () => {
         }
     }
 
-    useEffect(() => {
-        return () => {
-            dispatch(setSelectedUser(null));
-        }
-    },[]);
+    // useEffect(() => {
+    //     return () => {
+    //         dispatch(setSelectedUser(null));
+    //     }
+    // },[]);
 
     return (
         <div className='flex ml-[16%] h-screen'>
@@ -45,16 +47,16 @@ const ChatPage = () => {
                 <hr className='mb-4 border-gray-300' />
                 <div className='overflow-y-auto h-[80vh]'>
                     {
-                        suggestedUsers.map((suggestedUser) => {
-                            const isOnline = onlineUsers.includes(suggestedUser?._id);
+                        followingUser.map((followinguser) => {
+                            const isOnline = onlineUsers.includes(followinguser?._id);
                             return (
-                                <div onClick={() => dispatch(setSelectedUser(suggestedUser))} className='flex gap-3 items-center p-3 hover:bg-gray-50 cursor-pointer'>
+                                <div onClick={() => dispatch(setSelectedUser(followinguser))} className='flex gap-3 items-center p-3 hover:bg-gray-50 cursor-pointer'>
                                     <Avatar className='w-14 h-14'>
-                                        <AvatarImage src={suggestedUser?.profilePicture} />
+                                        <AvatarImage src={followinguser?.profilePicture} />
                                         <AvatarFallback>CN</AvatarFallback>
                                     </Avatar>
                                     <div className='flex flex-col'>
-                                        <span className='font-medium'>{suggestedUser?.username}</span>
+                                        <span className='font-medium'>{followinguser?.username}</span>
                                         <span className={`text-xs font-bold ${isOnline ? 'text-green-600' : 'text-red-600'} `}>{isOnline ? 'online' : 'offline'}</span>
                                     </div>
                                 </div>

@@ -54,7 +54,9 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
+   
     if (user) {
+      console.log("socket is being created");
       const socketio = io('http://localhost:8000', {
         query: {
           userId: user?._id
@@ -65,6 +67,7 @@ function App() {
 
       // listen all the events
       socketio.on('getOnlineUsers', (onlineUsers) => {
+        console.log("online user",onlineUsers)
         dispatch(setOnlineUsers(onlineUsers));
       });
       socketio.on('notification', (notification) => {
@@ -80,7 +83,7 @@ function App() {
       socket.close();
       dispatch(setSocket(null));
     }
-  }, [user, dispatch]);
+  }, [user]);
 
   return (
     <>

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
@@ -15,10 +15,20 @@ const EditProfile = () => {
     const { user } = useSelector(store => store.auth);
     const [loading, setLoading] = useState(false);
     const [input, setInput] = useState({
-        profilePhoto: user?.profilePicture,
-        bio: user?.bio,
-        gender: user?.gender
+        profilePhoto: '',
+        bio: '',
+        gender: ''
     });
+    
+    useEffect(() => {
+        if (user) {
+            setInput({
+                profilePhoto: user.profilePicture,
+                bio: user.bio,
+                gender: user.gender
+            });
+        }
+    }, [user]);
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
@@ -34,12 +44,17 @@ const EditProfile = () => {
 
     const editProfileHandler = async () => {
         console.log(input);
+        if(!input.gender){
+            toast.error("please select gender");
+            return;
+        }
         const formData = new FormData();
         formData.append("bio", input.bio);
         formData.append("gender", input.gender);
         if(input.profilePhoto){
             formData.append("profilePhoto", input.profilePhoto);
         }
+        console.log(formData);
         try {
             setLoading(true);
             const res = await axios.post('http://localhost:8000/api/v1/user/profile/edit', formData,{

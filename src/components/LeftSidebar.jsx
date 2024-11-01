@@ -7,9 +7,13 @@ import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { setAuthUser, setSelectedUser, setSuggestedUsers, setUserProfile } from '@/redux/authSlice'
 import CreatePost from './CreatePost'
-import { setPosts, setSelectedPost } from '@/redux/postSlice'
+import { resetPost, setPosts, setSelectedPost } from '@/redux/postSlice'
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 import { Button } from './ui/button'
+import { setSocket } from '@/redux/socketSlice'
+import { resetAuth } from '@/redux/authSlice'
+import { resetChat } from '@/redux/chatSlice'
+import { setLikeNotification } from '@/redux/rtnSlice'
 
 const LeftSidebar = () => {
     const navigate = useNavigate();
@@ -18,22 +22,27 @@ const LeftSidebar = () => {
     const dispatch = useDispatch();
     const [open, setOpen] = useState(false);
 
-
+   const handleViewNotifications=()=>{
+            console.log("in fn");
+            const obj={type:'empty'};
+            dispatch(setLikeNotification(obj))
+            
+   }
     const logoutHandler = async () => {
         try {
             const res = await axios.get('http://localhost:8000/api/v1/user/logout', { withCredentials: true });
             if (res.data.success) {
-                dispatch(setAuthUser(null));
-                dispatch(setSelectedPost(null));
-                dispatch(setPosts([]));
-                dispatch(setSuggestedUsers([]))
-                dispatch(setSelectedUser(null))
-                dispatch(setUserProfile(null))
+                dispatch(resetAuth());
+                dispatch(resetPost())
+                dispatch(setSocket(null));
+                dispatch(resetChat());
+                dispatch(setLikeNotification([]))
                 navigate("/login");
                 toast.success(res.data.message);
             }
         } catch (error) {
-            toast.error(error.response.data.message);
+            console.log(error);
+            toast.error(error.response?.data?.message);
         }
     }
 
@@ -86,7 +95,7 @@ const LeftSidebar = () => {
                                                 <PopoverTrigger asChild>
                                                     <Button size='icon' className="rounded-full h-5 w-5 bg-red-600 hover:bg-red-600 absolute bottom-6 left-6">{likeNotification.length}</Button>
                                                 </PopoverTrigger>
-                                                <PopoverContent>
+                                                <PopoverContent onClick={handleViewNotifications}>
                                                     <div>
                                                         {
                                                             likeNotification.length === 0 ? (<p>No new notification</p>) : (

@@ -53,9 +53,6 @@ const Profile = () => {
             followers: [...updatedUserProfile.followers, res.data.followKrneWala] 
         }
            newSuggestedUser = suggestedUsers.filter(p => p._id !== res.data.jiskoFollowKrunga);
-        // console.log("follow")
-        //   console.log("user is ",updatedUser);
-        //   console.log("updatedUserProfile",updatedUserProfile);
           
         }
         else{

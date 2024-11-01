@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Dialog, DialogContent, DialogTrigger } from './ui/dialog'
 import { Bookmark, MessageCircle, MoreHorizontal, Send } from 'lucide-react'
@@ -11,16 +11,90 @@ import { toast } from 'sonner'
 import { setPosts, setSelectedPost } from '@/redux/postSlice'
 import { Badge } from './ui/badge'
 import { Link } from 'react-router-dom'
+import { setAuthUser, setSuggestedUsers, setUserProfile } from '@/redux/authSlice'
 
 const Post = ({ post }) => {
+    // const [bookMark,setBookMark]=useState('Add to favorites');
+    const bookMark=post?.author?.bookMark
     const [text, setText] = useState("");
     const [open, setOpen] = useState(false);
-    const { user } = useSelector(store => store.auth);
+    const { user,userProfile,suggestedUsers } = useSelector(store => store.auth);
     const { posts,selectedPost} = useSelector(store => store.post);
     const [liked, setLiked] = useState(post?.likes?.includes(user?._id) || false);
     const [postLike, setPostLike] = useState(post?.likes?.length);
     const [comment, setComment] = useState(post.comments);
+    const [isFollower,setIsFollower]=useState(false);
     const dispatch = useDispatch();
+    const followController=()=>{
+        console.log("user is ",user);
+        console.log("post is ",post);
+        console.log("user?.following",user?.following)
+        console.log("post?.author?._id",post?.author?._id)
+        console.log("user?.following?.includes(post?.author?._id)",user?.following?.includes(post?.author?._id))
+        setIsFollower(user?.following?.includes(post?.author?._id));
+    }
+    useEffect(()=>{
+    console.log("is Foloower",isFollower);
+    },[isFollower])
+    const followUnfollowHandler=async (userId) => {
+        console.log("welcome")
+        console.log("userId is",userId);
+        try {
+          console.log(`http://localhost:8000/api/v1/user/followorunfollow/${userId}`)
+            const res = await axios.post(`http://localhost:8000/api/v1/user/followorunfollow/${userId}`,{
+              // , followKrneWala,jiskoFollowKrunga
+                
+            },{withCredentials: true});
+            if (res.data.success) {
+              let updatedUser=user;
+              let updatedUserProfile=userProfile;
+               let newSuggestedUser=suggestedUsers;
+              console.log("user is ",user);
+              if(res.data.message==='followed successfully'){
+               
+                console.log(" res.data.jiskoFollowKrunga", res.data.jiskoFollowKrunga);
+                updatedUser = { 
+                  ...updatedUser,
+                  following: [...updatedUser.following, res.data.jiskoFollowKrunga] 
+              }
+              updatedUserProfile = { 
+                ...updatedUserProfile, 
+                followers: [...updatedUserProfile.followers, res.data.followKrneWala] 
+            }
+               newSuggestedUser = suggestedUsers.filter(p => p._id !== res.data.jiskoFollowKrunga);
+               setIsFollower(true);
+            }
+            else{
+              console.log("res.data.jiskoFollowKrunga ",res.data.jiskoFollowKrunga);
+                 updatedUser = { 
+                ...updatedUser, 
+                following: updatedUser.following.filter(id => id !== res.data.jiskoFollowKrunga) 
+            }
+            updatedUserProfile = { 
+              ...updatedUserProfile, 
+              followers: updatedUserProfile.followers.filter(id=>id!=res.data.followKrneWala)
+          }
+          newSuggestedUser = [...suggestedUsers, userProfile];
+          setIsFollower(false);
+        }
+            console.log("unfollow")
+            console.log("user is ",updatedUser);
+            console.log("updatedUserProfile",updatedUserProfile);
+            dispatch(setAuthUser(updatedUser))
+            dispatch(setUserProfile(updatedUserProfile))
+            console.log("hi fine")
+            dispatch(setSuggestedUsers(newSuggestedUser))   
+           
+            toast.success(res.data.message); 
+              }
+             
+               
+            }
+        catch (error) {
+            console.log(error);
+            toast.error(error.response.data.message);
+        }
+    }
 
     const changeEventHandler = (e) => {
         const inputText = e.target.value;
@@ -105,6 +179,12 @@ const Post = ({ post }) => {
         try {
             const res = await axios.get(`http://localhost:8000/api/v1/post/${post?._id}/bookmark`, {withCredentials:true});
             if(res.data.success){
+                console.log("res.data in bookmark",res.data);
+                console.log("user is ",user);
+              
+                const UserafterBookmark = { ...user, bookmarks: res.data.bookMark };
+                console.log("UserafterBookmark",UserafterBookmark)
+                dispatch(setAuthUser(UserafterBookmark))
                 toast.success(res.data.message);
             }
         } catch (error) {
@@ -128,15 +208,15 @@ const Post = ({ post }) => {
                     </div>
                 </div>
                 <Dialog>
-                    <DialogTrigger asChild>
+                    <DialogTrigger asChild onClick={followController}>
                         <MoreHorizontal className='cursor-pointer' />
                     </DialogTrigger>
-                    <DialogContent className="flex flex-col items-center text-sm text-center">
+                    <DialogContent className="flex flex-col items-center text-sm text-center" >
                         {
-                        post?.author?._id !== user?._id && <Button variant='ghost' className="cursor-pointer w-fit text-[#ED4956] font-bold">Unfollow</Button>
+                        post?.author?._id !== user?._id && <Button onClick={()=>followUnfollowHandler(post?.author?._id)} variant='ghost' className="cursor-pointer w-fit text-[#ED4956] font-bold">{isFollower?<>unfollow</>:<>follow</> }</Button>
                         }
                         
-                        <Button variant='ghost' className="cursor-pointer w-fit">Add to favorites</Button>
+                        <Button variant='ghost' className="cursor-pointer w-fit" onClick={bookmarkHandler}>bookMark</Button>
                         {
                             user && user?._id === post?.author?._id && <Button onClick={deletePostHandler} variant='ghost' className="cursor-pointer w-fit">Delete</Button>
                         }
