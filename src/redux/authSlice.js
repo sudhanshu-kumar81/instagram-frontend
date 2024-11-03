@@ -4,7 +4,8 @@ const initialState={
     suggestedUsers:[],
     userProfile:null,
     selectedUser:null,
-    followingUser:[]
+    followingUser:[],
+    allAvailableUser:[],
 }
 const authSlice = createSlice({
     name:"auth",
@@ -26,6 +27,9 @@ const authSlice = createSlice({
         setFollowingUser:(state,action) => {
             state.followingUser = action.payload;
         },
+        setAllAvailableUser:(state,action) => {
+            state.allAvailableUser = action.payload;
+        },
         resetAuth: (state) =>
         {
             return initialState;
@@ -39,6 +43,7 @@ export const {
     setSuggestedUsers, 
     setUserProfile,
     setSelectedUser,
-    setFollowingUser
+    setFollowingUser,
+    setAllAvailableUser
 } = authSlice.actions;
 export default authSlice.reducer;

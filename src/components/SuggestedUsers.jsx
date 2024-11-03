@@ -80,7 +80,7 @@ const SuggestedUsers = () => {
             {
                 suggestedUsers.map((user) => {
                     return (
-                        <div key={user._id} className='flex items-center justify-between my-5'>
+                     <div key={user?._id} className='flex items-center justify-between my-5'>
                             <div className='flex items-center gap-2'>
                                 <Link to={`/profile/${user?._id}`}>
                                     <Avatar>

@@ -58,12 +58,14 @@ const LeftSidebar = () => {
         } else if (textType === 'Messages') {
             navigate("/chat");
         }
+        else if(textType === 'Search'){
+            navigate("/search")
+        }
     }
 
     const sidebarItems = [
         { icon: <Home />, text: "Home" },
         { icon: <Search />, text: "Search" },
-        { icon: <TrendingUp />, text: "Explore" },
         { icon: <MessageCircle />, text: "Messages" },
         { icon: <Heart />, text: "Notifications" },
         { icon: <PlusSquare />, text: "Create" },
